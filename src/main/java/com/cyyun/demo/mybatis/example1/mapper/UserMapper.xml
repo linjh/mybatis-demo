@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.cyyun.demo.mybatis.example1.mapper.UserMapper">
+
+    <!--<resultMap id="userMap" type="com.cyyun.demo.mybatis.example1.beans.User">-->
+        <!--<id property="id" column="id" javaType="java.lang.Long"/>-->
+        <!--<result property="username" column="username" javaType="java.lang.String"/>-->
+        <!--<result property="password" column="password" javaType="java.lang.String"/>-->
+        <!--<result property="account" column="account" javaType="java.lang.String"/>-->
+        <!--<result property="createUid" column="create_uid" javaType="java.lang.Long"/>-->
+    <!--</resultMap>-->
+
+    <sql id="base_column_list">
+        username,password,account,create_uid
+    </sql>
+
+    <insert id="batchInsertUser" parameterType="java.util.List" statementType="PREPARED">
+        INSERT  INTO t_demo_user(
+        <include refid="base_column_list"/>
+        ) VALUES
+        <foreach collection="users" item="user" separator=",">
+            (#{user.username},#{user.password},#{user.account},#{user.createUid})
+          </foreach>
+    </insert>
+
+    <delete id="batchDeleteUser">
+        DELETE FROM t_demo_user where id in (
+          <foreach collection="list" item="item" separator=",">
+              #{id}
+          </foreach>
+        )
+    </delete>
+
+    <!--collection 为用于遍历的元素（必选），支持数组、List、Set  -->
+    <!-- item 表示集合中每一个元素进行迭代时的别名. -->
+    <!--separator表示在每次进行迭代之间以什么符号作为分隔 符.  -->
+
+    <!--#在生成SQL时，对于字符类型参数，会拼装引号
+        $在生成SQL时，不会拼装引号，可用于order by之类的参数拼装-->
+
+    <select id="pagerUser" parameterType="java.util.Map" resultType="user">
+        select * from t_demo_user where 1 = 1
+        <if test="username != null">
+            and username like '%${username}%'
+        </if>
+        order by id asc
+        <if test="index != null and pageSize != null">
+                offset ${index*pageSize}
+                limit ${pageSize}
+        </if>
+
+    </select>
+
+    <select id="countUser" parameterType="java.util.Map" resultType="int">
+        select count(id) from t_demo_user where 1=1
+        <if test="username != null">
+            and username like '%${username}%'
+        </if>
+    </select>
+
+</mapper>
